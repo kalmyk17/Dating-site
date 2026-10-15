@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сердцеед — знакомства 18+</title>
+<style>
+/* ===== Переменные и база ===== */
+:root{
+  --bg:#fff7f5; --card:#ffffff; --text:#2b2230; --muted:#625769;
+  --primary:#c72f58; --primary-d:#a32046; --accent:#ffb454; --line:#f0dfe3;
+  --ok:#1f7a4d; --err:#b3261e; --radius:16px; --shadow:0 6px 20px rgba(120,40,70,.10);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #2b6cff;outline-offset:2px}
+h1,h2,h3{line-height:1.2;margin:0 0 .5em}
+.container{max-width:1080px;margin:0 auto;padding:0 16px}
+.skip{position:absolute;left:-999px;top:0;background:#000;color:#fff;padding:8px 12px;z-index:100}
+.skip:focus{left:8px}
+
+/* ===== Кнопки и поля ===== */
+.btn{font:inherit;font-weight:600;border:2px solid transparent;border-radius:999px;padding:10px 20px;cursor:pointer;transition:transform .15s,background .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-d)}
+.btn-ghost{background:#fff;color:var(--primary);border-color:var(--primary)}
+.btn-ghost:hover{background:#fff0f4}
+.btn-sm{padding:6px 14px;font-size:.9rem}
+label{font-weight:600;display:block;margin-bottom:4px}
+input,select,textarea{font:inherit;width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--text)}
+input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--err)}
+.error{color:var(--err);font-size:.88rem;min-height:1.2em;display:block}
+
+/* ===== Шапка ===== */
+header.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0}
+.logo{font-weight:800;font-size:1.4rem;color:var(--primary);display:flex;align-items:center;gap:6px;margin-right:auto}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:inherit;font-weight:600;background:none;border:0;padding:8px 14px;border-radius:999px;cursor:pointer;color:var(--text)}
+nav button:hover{background:#fff0f4}
+nav button[aria-current="page"]{background:var(--primary);color:#fff}
+.badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--accent);color:#3a2500;font-size:.8rem;text-align:center}
+
+/* ===== Hero ===== */
+.hero{padding:40px 0 24px;text-align:center;background:linear-gradient(135deg,#ffe3ea,#fff0d9)}
+.hero h1{font-size:clamp(1.8rem,5vw,3rem)}
+.hero p{max-width:560px;margin:0 auto 20px;color:var(--muted);font-size:1.1rem}
+
+/* ===== Фильтры ===== */
+.filters{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:20px 0;box-shadow:var(--shadow)}
+.filters .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:12px}
+fieldset{border:0;margin:0;padding:0}
+legend{font-weight:600;margin-bottom:6px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:5px 12px;border:2px solid var(--line);border-radius:999px;font-weight:500;background:#fff;font-size:.9rem}
+.chip input:checked + span{background:var(--primary);border-color:var(--primary);color:#fff}
+.chip input:focus-visible + span{outline:3px solid #2b6cff;outline-offset:2px}
+
+/* ===== Карточки анкет ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-bottom:32px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.avatar{height:130px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,hsl(var(--h),70%,55%),hsl(calc(var(--h) + 50),75%,45%));text-shadow:0 2px 6px rgba(0,0,0,.25)}
+.card .body{padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:1.15rem}
+.meta{color:var(--muted);font-size:.92rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:#fff0f4;color:var(--primary-d);border-radius:999px;padding:2px 10px;font-size:.82rem;font-weight:600}
+.actions{display:flex;gap:8px;margin-top:auto}
+.actions .btn{flex:1}
+.empty{text-align:center;color:var(--muted);padding:40px 0;grid-column:1/-1}
+
+/* ===== Формы и разделы ===== */
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:24px 0;box-shadow:var(--shadow)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.full{grid-column:1/-1}
+.matches{display:grid;grid-template-columns:260px 1fr;gap:16px}
+.mlist{display:flex;flex-direction:column;gap:6px}
+.mitem{display:flex;gap:10px;align-items:center;width:100%;text-align:left;font:inherit;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px;cursor:pointer}
+.mitem[aria-pressed="true"]{border-color:var(--primary);background:#fff0f4}
+.mini{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;
+  background:linear-gradient(135deg,hsl(var(--h),70%,55%),hsl(calc(var(--h) + 50),75%,45%))}
+.chat{display:flex;flex-direction:column;min-height:320px;border:2px solid var(--line);border-radius:12px;overflow:hidden}
+.chat-head{padding:10px 14px;background:#fff0f4;font-weight:700}
+.msgs{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:340px;background:#fffafb}
+.msg{max-width:78%;padding:8px 12px;border-radius:14px;word-wrap:break-word}
+.msg.me{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+.msg.them{align-self:flex-start;background:#f3e9ec;border-bottom-left-radius:4px}
+.chat form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+
+/* ===== Модальное окно и тост ===== */
+.overlay{position:fixed;inset:0;background:rgba(30,10,20,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:#fff;border-radius:24px;padding:28px;max-width:380px;width:100%;text-align:center;animation:pop .3s ease}
+.modal .heart{font-size:3.5rem;animation:beat 1s infinite}
+@keyframes beat{50%{transform:scale(1.2)}}
+.modal .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2230;color:#fff;padding:10px 20px;border-radius:999px;z-index:60;box-shadow:var(--shadow)}
+
+footer{background:#2b2230;color:#e9dfe6;padding:28px 0;margin-top:40px;font-size:.95rem}
+footer a{color:#ffd1dc}
+footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+footer h3{color:#fff;font-size:1rem}
+
+@media (max-width:700px){
+  .matches{grid-template-columns:1fr}
+  .logo{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">К основному содержимому</a>
+
+<!-- ===== Шапка и навигация ===== -->
+<header class="top">
+  <div class="container bar">
+    <div class="logo"><span aria-hidden="true">💘</span> Сердцеед</div>
+    <nav aria-label="Основная навигация">
+      <button data-view="feed" aria-current="page">Анкеты</button>
+      <button data-view="matches">Мои матчи<span class="badge" id="matchBadge" aria-label="количество матчей">0</span></button>
+      <button data-view="profile">Профиль</button>
+    </nav>
+    <button class="btn btn-ghost btn-sm" id="loginBtn">Войти</button>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ===== Раздел: Анкеты ===== -->
+  <section id="view-feed" aria-labelledby="feedTitle">
+    <div class="hero">
+      <div class="container">
+        <h1>Найди того, кто разделит твои интересы</h1>
+        <p>Создай анкету, листай профили, ставь лайки — и при взаимной симпатии начни общение.</p>
+        <button class="btn btn-primary" id="heroBtn">Создать анкету</button>
+      </div>
+    </div>
+    <div class="container">
+      <h2 id="feedTitle" style="margin-top:24px">Анкеты рядом с тобой</h2>
+
+      <form class="filters" id="filters" aria-label="Фильтры анкет">
+        <div class="row">
+          <div><label for="fAgeMin">Возраст от</label><input type="number" id="fAgeMin" min="18" max="99" value="18"></div>
+          <div><label for="fAgeMax">Возраст до</label><input type="number" id="fAgeMax" min="18" max="99" value="99"></div>
+          <div><label for="fCity">Город</label><select id="fCity"><option value="">Любой</option></select></div>
+        </div>
+        <fieldset><legend>Интересы</legend><div class="chips" id="fInterests"></div></fieldset>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button type="button" class="btn btn-ghost btn-sm" id="resetFilters">Сбросить фильтры</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="resetSeen">Показать пропущенные заново</button>
+          <span class="meta" id="count" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <div class="grid" id="feed" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ===== Раздел: Матчи ===== -->
+  <section id="view-matches" class="container" aria-labelledby="mTitle" hidden>
+    <div class="panel">
+      <h2 id="mTitle">Мои матчи</h2>
+      <div id="noMatches" class="meta">Пока нет матчей. Ставь лайки в разделе «Анкеты» — взаимность не заставит себя ждать!</div>
+      <div class="matches" id="matchesBox" hidden>
+        <div class="mlist" id="mList" role="group" aria-label="Список матчей"></div>
+        <div class="chat" id="chat" hidden>
+          <div class="chat-head" id="chatHead"></div>
+          <div class="msgs" id="msgs" aria-live="polite"></div>
+          <form id="chatForm">
+            <label for="chatInput" class="skip" style="position:absolute">Сообщение</label>
+            <input id="chatInput" maxlength="300" placeholder="Напишите сообщение…" autocomplete="off" required>
+            <button class="btn btn-primary" type="submit">Отправить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Раздел: Профиль / регистрация ===== -->
+  <section id="view-profile" class="container" aria-labelledby="pTitle" hidden>
+    <div class="panel">
+      <h2 id="pTitle">Создать анкету</h2>
+      <p class="meta" id="pHint">Сайт только для совершеннолетних. Используйте вымышленные данные — это учебный прототип.</p>
+      <form id="regForm" novalidate>
+        <div class="form-grid">
+          <div><label for="rName">Имя</label><input id="rName" maxlength="30" autocomplete="off" aria-describedby="eName"><span class="error" id="eName"></span></div>
+          <div><label for="rAge">Возраст (18+)</label><input id="rAge" type="number" inputmode="numeric" aria-describedby="eAge"><span class="error" id="eAge"></span></div>
+          <div><label for="rCity">Город</label><input id="rCity" maxlength="40" autocomplete="off" aria-describedby="eCity"><span class="error" id="eCity"></span></div>
+          <div><label for="rGender">Пол</label>
+            <select id="rGender"><option value="ж">Женский</option><option value="м">Мужской</option><option value="др">Другое</option></select></div>
+          <div><label for="rLook">Кого ищу</label>
+            <select id="rLook"><option value="все">Всех</option><option value="ж">Девушек</option><option value="м">Парней</option></select></div>
+          <div class="full"><label for="rAbout">О себе</label><textarea id="rAbout" rows="3" maxlength="300" aria-describedby="eAbout"></textarea><span class="error" id="eAbout"></span></div>
+          <fieldset class="full"><legend>Интересы (минимум 1)</legend><div class="chips" id="rInterests"></div><span class="error" id="eInt"></span></fieldset>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" type="submit" id="saveBtn">Сохранить анкету</button>
+          <button class="btn btn-ghost" type="button" id="delBtn" hidden>Удалить анкету</button>
+        </div>
+      </form>
+      <div id="preview" style="margin-top:20px;max-width:280px"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== Подвал ===== -->
+<footer>
+  <div class="container cols">
+    <div><h3>Правила сообщества</h3><p>Будьте вежливы, не публикуйте чужие данные, не используйте сайт при возрасте младше 18 лет.</p></div>
+    <div><h3>Контакты</h3><p>Поддержка: <a href="mailto:support@example.invalid">support@example.invalid</a></p></div>
+    <div><h3>18+</h3><p><strong>Сайт только для лиц старше 18 лет.</strong> Все анкеты на сайте вымышленные.</p></div>
+  </div>
+</footer>
+
+<!-- ===== Модальное окно «Это матч!» ===== -->
+<div class="overlay" id="matchModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mmTitle">
+    <div class="heart" aria-hidden="true">💞</div>
+    <h2 id="mmTitle">Это матч!</h2>
+    <p id="mmText"></p>
+    <div class="btns">
+      <button class="btn btn-primary" id="mmChat">Написать</button>
+      <button class="btn btn-ghost" id="mmClose">Продолжить</button>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* ===== Данные: 12 вымышленных анкет =====
+   likesYou — «правило взаимности»: если true, лайк станет матчем */
+const INTERESTS = ['Музыка','Кино','Путешествия','Спорт','Книги','Кулинария','Игры','Фото','Природа','Искусство'];
+const PROFILES = [
+  {id:1, name:'Алина',  age:24, city:'Москва',          gender:'ж', hue:340, likesYou:true,  interests:['Музыка','Кино','Фото'],            about:'Люблю концерты и ночные прогулки с камерой.'},
+  {id:2, name:'Денис',  age:28, city:'Санкт-Петербург', gender:'м', hue:210, likesYou:true,  interests:['Спорт','Путешествия','Игры'],      about:'Бегаю по утрам, мечтаю объехать все столицы.'},
+  {id:3, name:'Мария',  age:22, city:'Казань',          gender:'ж', hue:20,  likesYou:false, interests:['Книги','Искусство','Кулинария'],   about:'Читаю фантастику и пеку круассаны.'},
+  {id:4, name:'Артём',  age:31, city:'Москва',          gender:'м', hue:150, likesYou:true,  interests:['Природа','Фото','Путешествия'],    about:'Походы с палаткой и тёплый чай у костра.'},
+  {id:5, name:'Софья',  age:26, city:'Новосибирск',     gender:'ж', hue:280, likesYou:false, interests:['Игры','Кино','Музыка'],            about:'Ценю хорошие сюжеты — в играх и в фильмах.'},
+  {id:6, name:'Кирилл', age:25, city:'Санкт-Петербург', gender:'м', hue:190, likesYou:true,  interests:['Музыка','Искусство','Книги'],      about:'Играю на гитаре и хожу по музеям.'},
+  {id:7, name:'Екатерина',age:29,city:'Казань',         gender:'ж', hue:50,  likesYou:true,  interests:['Кулинария','Природа','Спорт'],     about:'Йога, рынок выходного дня и новые рецепты.'},
+  {id:8, name:'Иван',   age:33, city:'Новосибирск',     gender:'м', hue:100, likesYou:false, interests:['Спорт','Игры','Кино'],             about:'Люблю настолки, баскетбол и хорошие шутки.'},
+  {id:9, name:'Полина', age:21, city:'Москва',          gender:'ж', hue:310, likesYou:true,  interests:['Искусство','Фото','Путешествия'],  about:'Рисую скетчи в каждом новом городе.'},
+  {id:10,name:'Максим', age:27, city:'Казань',          gender:'м', hue:240, likesYou:false, interests:['Кулинария','Книги','Природа'],     about:'Готовлю по воскресеньям, читаю по вечерам.'},
+  {id:11,name:'Анна',   age:30, city:'Санкт-Петербург', gender:'ж', hue:0,   likesYou:false, interests:['Кино','Книги','Музыка'],           about:'Кинотеатры, винил и бесконечные плейлисты.'},
+  {id:12,name:'Олег',   age:35, city:'Москва',          gender:'м', hue:170, likesYou:true,  interests:['Путешествия','Спорт','Кулинария'], about:'Люблю море, сёрфинг и домашнюю пасту.'}
+];
+const REPLIES = ['Привет! Рад(а) нашему матчу 😊','Расскажи, чем занимаешься на выходных?','Ого, у нас много общего!','Давай как-нибудь выпьем кофе?','Классная идея!'];
+
+/* ===== Хранилище (localStorage) ===== */
+const KEY = 'serdtseed_v1';
+const defaults = () => ({user:null, liked:[], skipped:[], matches:[], chats:{}});
+function load(){
+  try { return Object.assign(defaults(), JSON.parse(localStorage.getItem(KEY) || '{}')); }
+  catch(e){ return defaults(); }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){ toast('Не удалось сохранить данные'); }
+}
+let state = load();
+let activeChat = null;
+
+/* ===== Утилиты ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId = id => PROFILES.find(p => p.id === id);
+const initial = n => esc(n.trim().charAt(0).toUpperCase());
+let toastTimer;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2200);
+}
+function chips(box, name){
+  box.innerHTML = INTERESTS.map(i =>
+    `<label class="chip"><input type="checkbox" name="${name}" value="${i}"><span>${i}</span></label>`).join('');
+}
+const checked = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value);
+
+/* ===== Навигация между разделами ===== */
+function go(view){
+  ['feed','matches','profile'].forEach(v => $('#view-' + v).hidden = (v !== view));
+  document.querySelectorAll('nav button').forEach(b =>
+    b.dataset.view === view ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current'));
+  if (view === 'matches') renderMatches();
+  if (view === 'profile') renderProfile();
+  window.scrollTo({top:0});
+}
+
+/* ===== Лента анкет и фильтры ===== */
+function cardHTML(p, withActions){
+  return `<article class="card" aria-label="Анкета: ${esc(p.name)}, ${p.age}">
+    <div class="avatar" style="--h:${p.hue}" aria-hidden="true">${initial(p.name)}</div>
+    <div class="body">
+      <h3>${esc(p.name)}, ${p.age}</h3>
+      <div class="meta">📍 ${esc(p.city)}</div>
+      <p style="margin:0">${esc(p.about)}</p>
+      <div class="tags">${p.interests.map(i => `<span class="tag">${esc(i)}</span>`).join('')}</div>
+      ${withActions ? `<div class="actions">
+        <button class="btn btn-ghost" data-act="skip" data-id="${p.id}" aria-label="Пропустить ${esc(p.name)}">Пропустить</button>
+        <button class="btn btn-primary" data-act="like" data-id="${p.id}" aria-label="Лайк ${esc(p.name)}">❤ Лайк</button>
+      </div>` : ''}
+    </div></article>`;
+}
+function filtered(){
+  const min = +$('#fAgeMin').value || 18, max = +$('#fAgeMax').value || 99;
+  const city = $('#fCity').value, ints = checked('fint');
+  return PROFILES.filter(p =>
+    !state.liked.includes(p.id) && !state.skipped.includes(p.id) &&
+    p.age >= min && p.age <= max &&
+    (!city || p.city === city) &&
+    (!ints.length || ints.some(i => p.interests.includes(i))));
+}
+function renderFeed(){
+  const list = filtered();
+  $('#feed').innerHTML = list.length ? list.map(p => cardHTML(p, true)).join('')
+    : '<div class="empty">Анкеты закончились 🙈<br>Попробуйте изменить фильтры или показать пропущенные заново.</div>';
+  $('#count').textContent = 'Найдено анкет: ' + list.length;
+  $('#matchBadge').textContent = state.matches.length;
+}
+
+/* ===== Лайки и матчи ===== */
+function skip(id){
+  state.skipped.push(id); save(); renderFeed();
+}
+function like(id){
+  const p = byId(id); if (!p) return;
+  state.liked.push(id);
+  if (p.likesYou && !state.matches.includes(id)){
+    state.matches.push(id);
+    state.chats[id] = [{from:'them', text:REPLIES[0]}];
+    save(); renderFeed(); showMatch(p);
+  } else {
+    save(); renderFeed(); toast('Лайк отправлен ' + p.name);
+  }
+}
+let lastFocus, matchId;
+function showMatch(p){
+  matchId = p.id; lastFocus = document.activeElement;
+  $('#mmText').textContent = 'Вы с ' + p.name + ' понравились друг другу!';
+  $('#matchModal').hidden = false; $('#mmChat').focus();
+}
+function closeMatch(){
+  $('#matchModal').hidden = true;
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+
+/* ===== Мои матчи и мок-чат ===== */
+function renderMatches(){
+  const has = state.matches.length > 0;
+  $('#noMatches').hidden = has; $('#matchesBox').hidden = !has;
+  $('#matchBadge').textContent = state.matches.length;
+  if (!has) return;
+  $('#mList').innerHTML = state.matches.map(id => {
+    const p = byId(id);
+    return `<button class="mitem" data-chat="${id}" aria-pressed="${activeChat === id}">
+      <span class="mini" style="--h:${p.hue}" aria-hidden="true">${initial(p.name)}</span>
+      <span><strong>${esc(p.name)}</strong><br><span class="meta">${esc(p.city)}</span></span></button>`;
+  }).join('');
+  if (activeChat) openChat(activeChat);
+}
+function openChat(id){
+  activeChat = id; const p = byId(id);
+  $('#chat').hidden = false;
+  $('#chatHead').textContent = 'Чат с ' + p.name;
+  document.querySelectorAll('.mitem').forEach(b => b.setAttribute('aria-pressed', b.dataset.chat == id));
+  const msgs = state.chats[id] || [];
+  const box = $('#msgs');
+  box.innerHTML = msgs.map(m => `<div class="msg ${m.from === 'me' ? 'me' : 'them'}">${esc(m.text)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+function sendMessage(text){
+  const id = activeChat; if (!id) return;
+  (state.chats[id] = state.chats[id] || []).push({from:'me', text});
+  save(); openChat(id);
+  // Имитация ответа собеседника
+  setTimeout(() => {
+    state.chats[id].push({from:'them', text:REPLIES[1 + Math.floor(Math.random() * (REPLIES.length - 1))]});
+    save(); if (activeChat === id) openChat(id);
+  }, 1000);
+}
+
+/* ===== Регистрация и профиль ===== */
+function setErr(inputId, errId, msg){
+  const el = $('#' + inputId); if (el) el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  $('#' + errId).textContent = msg || '';
+  return !msg;
+}
+function validate(){
+  const name = $('#rName').value.trim(), age = parseInt($('#rAge').value, 10),
+        city = $('#rCity').value.trim(), about = $('#rAbout').value.trim(), ints = checked('rint');
+  let ok = true;
+  ok = setErr('rName','eName', name.length < 2 ? 'Введите имя (минимум 2 символа)' : '') && ok;
+  let ageMsg = '';
+  if (isNaN(age)) ageMsg = 'Укажите возраст';
+  else if (age < 18) ageMsg = 'Регистрация доступна только с 18 лет';
+  else if (age > 99) ageMsg = 'Укажите корректный возраст';
+  ok = setErr('rAge','eAge', ageMsg) && ok;
+  ok = setErr('rCity','eCity', city.length < 2 ? 'Укажите город' : '') && ok;
+  ok = setErr('rAbout','eAbout', about.length < 10 ? 'Расскажите о себе (минимум 10 символов)' : '') && ok;
+  ok = setErr(null,'eInt', ints.length ? '' : 'Выберите хотя бы один интерес') && ok;
+  return ok ? {name, age, city, about, interests:ints, gender:$('#rGender').value, looking:$('#rLook').value, hue:340} : null;
+}
+function renderProfile(){
+  const u = state.user;
+  $('#pTitle').textContent = u ? 'Мой профиль' : 'Создать анкету';
+  $('#saveBtn').textContent = u ? 'Обновить анкету' : 'Сохранить анкету';
+  $('#delBtn').hidden = !u;
+  $('#loginBtn').textContent = u ? u.name : 'Войти';
+  if (u){
+    $('#rName').value = u.name; $('#rAge').value = u.age; $('#rCity').value = u.city;
+    $('#rGender').value = u.gender; $('#rLook').value = u.looking; $('#rAbout').value = u.about;
+    document.querySelectorAll('input[name="rint"]').forEach(i => i.checked = u.interests.includes(i.value));
+    $('#preview').innerHTML = '<h3>Так видят вашу анкету</h3>' + cardHTML(u, false);
+  } else $('#preview').innerHTML = '';
+}
+
+/* ===== Инициализация и события ===== */
+function init(){
+  chips($('#fInterests'), 'fint'); chips($('#rInterests'), 'rint');
+  [...new Set(PROFILES.map(p => p.city))].sort().forEach(c =>
+    $('#fCity').insertAdjacentHTML('beforeend', `<option>${esc(c)}</option>`));
+
+  document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.view)));
+  $('#heroBtn').addEventListener('click', () => go('profile'));
+  $('#loginBtn').addEventListener('click', () => go('profile'));
+
+  $('#filters').addEventListener('input', renderFeed);
+  $('#filters').addEventListener('submit', e => e.preventDefault());
+  $('#resetFilters').addEventListener('click', () => {
+    $('#fAgeMin').value = 18; $('#fAgeMax').value = 99; $('#fCity').value = '';
+    document.querySelectorAll('input[name="fint"]').forEach(i => i.checked = false); renderFeed();
+  });
+  $('#resetSeen').addEventListener('click', () => {
+    state.skipped = []; state.liked = state.liked.filter(id => state.matches.includes(id)); save(); renderFeed();
+  });
+  $('#feed').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return;
+    const id = +b.dataset.id; b.dataset.act === 'like' ? like(id) : skip(id);
+  });
+
+  $('#mList').addEventListener('click', e => {
+    const b = e.target.closest('[data-chat]'); if (b) openChat(+b.dataset.chat);
+  });
+  $('#chatForm').addEventListener('submit', e => {
+    e.preventDefault(); const t = $('#chatInput').value.trim();
+    if (t){ sendMessage(t); $('#chatInput').value = ''; }
+  });
+
+  $('#regForm').addEventListener('submit', e => {
+    e.preventDefault(); const data = validate(); if (!data) return;
+    state.user = data; save(); renderProfile(); toast('Анкета сохранена ✔');
+  });
+  $('#delBtn').addEventListener('click', () => {
+    if (!confirm('Удалить анкету?')) return;
+    state.user = null; save(); $('#regForm').reset(); renderProfile(); toast('Анкета удалена');
+  });
+
+  $('#mmClose').addEventListener('click', closeMatch);
+  $('#mmChat').addEventListener('click', () => { closeMatch(); activeChat = matchId; go('matches'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#matchModal').hidden) closeMatch(); });
+
+  renderFeed(); renderProfile();
+}
+init();
+</script>
+</body>
+</html>
